@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-//const route = require('./routes/route.js');
+const route = require('./routes/route.js');
 const { default: mongoose } = require('mongoose');
 const app = express();
 
@@ -14,7 +14,7 @@ mongoose.connect("mongodb+srv://pattamu:iKHwECgQCaYNVpge@sandeepcluster.9rzkh.mo
 .catch ( err => console.log(err) )
 
 
-//app.use('/', route);
+app.use('/', route);
 
 
 app.listen(process.env.PORT || 3000, function () {
