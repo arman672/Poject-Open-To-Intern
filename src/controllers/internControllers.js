@@ -7,10 +7,12 @@ const validator = require ("email-validator")
 const createIntern = async (req,res)=>{
     try{
         const data = req.body
-        const { name, mobile, email, collegeName} = data // destructuring the required fields from data
+        
         if(Object.keys(data).length == 0){
             return res.status(400).send({status : false, message : "Plese enter the mandatory details"})
-        }
+        } 
+
+        const { name, mobile, email, collegeName} = data // destructuring the required fields from data
 
         if(!name){
             return res.status(400).send({status : false, message : "name is a required field"})
@@ -34,7 +36,7 @@ const createIntern = async (req,res)=>{
         const mobiles = mobile.replace(/\s+/g, '') // removing space from in between in case we recieved (+91 9876543212)
         const mobilePattern = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/g // declaring valid phone number pattern   
         if(!mobiles.match(mobilePattern)){ 
-            return res.status(400).send({status : false, message : "This is not a valid Mobile Number"})
+            return res.status(400).send({status : false, message : "This is not a valid Mobile Number, only indian numbers are accepted."})
         } 
 
         if(!collegeName){
@@ -49,7 +51,7 @@ const createIntern = async (req,res)=>{
         }
 
         if(findcollege.isDeleted === true){ //checking if the found college is deleted or not
-            return res.status(404).send({status : false, message : "College not found"})
+            return res.status(404).send({status : false, message : "college is deleted"})
         } 
 
         //checking if intern already exist
