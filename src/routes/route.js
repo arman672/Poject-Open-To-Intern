@@ -6,6 +6,7 @@ const internControllers = require("../controllers/internControllers")
 
 
 router.post("/functionup/colleges", collegeControllers.createCollege)
+router.get("/functionup/collegeDetails", collegeControllers.collegeDetails)
 
 router.post("/functionup/interns", internControllers.createIntern)
 

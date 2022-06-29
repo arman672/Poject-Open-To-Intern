@@ -1,78 +1,83 @@
 
-const collegModel = require("../models/collegeModel")
+const collegeModel = require("../models/collegeModel")
 const internModel = require("../models/internModel")
 const validUrl = require("valid-url")
 
-exports.collegeDetails = async (req, res) => {
+const createCollege = async (req, res) => {
     try {
-        let collegeName = req.params.name
-        if (!collageName || collegeName.trim().length == 0) {
-            return res.status(400).send({ status: false, msg: "Collage Name is requierd" })
-        }
-        const findCollege = collegeModel.findOne({ name: collegeName, isDeleted: false }).select({ isDeleted: 0 })
-        if(!findCollege){
-            return res.status(404).send({ status: false, msg: "college not found" })
-        }
-        const internData = internModel.find({ collegeId: findCollege.collegeId, isDeleted: false}).select({ _id: 1, name: 1, email: 1, mobile: 1 })
-        if(internData.length == 0){
-            return res.status(404).send({ status: false, msg: "no interns found for the given link"})
-        }
-        return res.status(200).send({ data: { findCollege, interns: internData } })
-    } catch (err) {
-        return res.status(500).send({status: false, msg: err.message})
-    }
-}
-
-
-const createCollege = async (req,res)=>{
-    try{
         let data = req.body
 
-        const {name, fullName, logoLink} = data //destructuring required fields
+        const { name, fullName, logoLink } = data //destructuring required fields
 
-        if(!name){
-            return res.status(400).send({status : false, msg : "name is a required field"})
-        } 
-
-        const namePattern = /^[a-z]((?![? .,'-]$)[ .]?[a-z]){1,10}$/g  
-        
-        if(!name.match(namePattern)){
-            return res.status(400).send({status : false, msg : "This is not a valid Name"})
+        if (!name) {
+            return res.status(400).send({ status: false, message: "name is a required field" })
         }
 
-        if(!fullName){
-            return res.status(400).send({status : false, msg : "fullName is a required field"})
+        if (!name.match(/^[a-z]+$/i)) {
+            return res.status(400).send({ status: false, message: "name must be in anabbreviated format" })
         }
 
-        const fullNamePattern = /^[a-z]((?![? .,'-]$)[ .]?[a-z]){3,150}$/gi  
+        if (!fullName) {
+            return res.status(400).send({ status: false, message: "FullName is a required field" })
+        }
 
-        if(!fullName.match(fullNamePattern)){
-            return res.status(400).send({status : false, msg : "This is not a valid full Name"})
-        } 
+        const fullNamePattern = /^[a-z]((?![? .,'-]$)[ .]?[a-z]){3,150}$/gi
 
-        if(!logoLink){
-            return res.status(400).send({status : false, msg : "logoLink is a required field"})
-        } 
+        if (!fullName.match(fullNamePattern)) {
+            return res.status(400).send({ status: false, message: "Full name is not valid" })
+        }
 
-        const isValidUrl = function(url)
-        {
+        if (!logoLink) {
+            return res.status(400).send({ status: false, message: "logoLink is a required field" })
+        }
+
+        //validating url
+        const isValidUrl = function (url) {
             if (validUrl.isUri(url)) return true;
-            return false
+            else return false
         }
 
-        if(!isValidUrl){
-        return res.status(400).send({status : false, msg : "This is not a valid logoLink"})
-        } 
+        if (!isValidUrl(logoLink)) {
+            return res.status(400).send({ status: false, message: "Logo Link url is not valid" })
+        }
 
-        if (!await collegModel.exists({name : data.name})){ 
-            let college = await collegModel.create(data) 
-            return res.status(201).send({status : true, msg : "Your college has been registered", data : college }) 
-        }else{
-            return res.status(400).send({status : false, msg : "this college name is already registered"})
-        } 
+        if (!await collegeModel.exists({ name: data.name })) {
+            let college = await collegeModel.create(data)
+            return res.status(201).send({ status: true, message: "Your college has been registered", data: college })
+        } else {
+            return res.status(400).send({ status: false, message: "the college with this name already exist" })
+        }
     }
-    catch (err){
-        return res.status(500).send({status : false, err : err.message})
+    catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
     }
 }
-module.exports = {createCollege, }
+const collegeDetails = async (req, res) => {
+    try {
+        let collegeName = req.query.name
+        if (!collegeName || collegeName.trim().length == 0) {
+            return res.status(400).send({ status: false, message: "College Name is requierd" })
+        }
+        if (!collegeName.match(/^[a-z]+$/i)) {
+            return res.status(400).send({ status: false, message: "College name must be in anabbreviated format" })
+        }
+
+        const findCollege = await collegeModel.findOne({ name: collegeName, isDeleted: false }).select({ collegeId: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+
+        if (!findCollege) {
+            return res.status(404).send({ status: false, message: "college not found" })
+        }
+
+        const internData = await internModel.find({ collegeId: findCollege._id, isDeleted: false }).select({ collegeId: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+
+        if (internData.length == 0) {
+            return res.status(404).send({ status: false, message: "No interns found for the given college name" })
+        }
+
+        return res.status(200).send({data: { name: findCollege.name, fullName: findCollege.fullName, logoLink: findCollege.logoLink, interns: internData } })
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
+
+module.exports = { createCollege, collegeDetails }
