@@ -43,7 +43,7 @@ const createIntern = async (req,res)=>{
             return res.status(400).send({status : false, message : "college name is a required field"})
         }  
         if (!collegeName.match(/^[a-z]+$/i)) {
-            return res.status(400).send({ status: false, message: "name must be in anabbreviated format" })
+            return res.status(400).send({ status: false, message: "name must be in an abbreviated format" })
         }   
         const findcollege = await collegeModel.findOne({name : collegeName}) // checking for the college if any with that name exists
         if(!findcollege){
