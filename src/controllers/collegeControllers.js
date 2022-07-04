@@ -4,6 +4,7 @@ const internModel = require("../models/internModel")
 //const validUrl = require("valid-url")
 
 const createCollege = async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin','*')
     try {
         let data = req.body
 
@@ -17,12 +18,15 @@ const createCollege = async (req, res) => {
             return res.status(400).send({ status: false, message: "name is a required field" })
         }
 
-        if (!name.match(/^[a-z]+$/i)) {
+        if (typeof name != "string" || !name.match(/^[a-z]+$/i)) {
             return res.status(400).send({ status: false, message: "name must be in an abbreviated format" })
         }
 
         if (!fullName) {
             return res.status(400).send({ status: false, message: "FullName is a required field" })
+        }
+        if(typeof fullName != "string"){
+            return res.status(400).send({ status: false, message: "FullName is not valid" })
         }
 
         //validating full name
@@ -33,6 +37,7 @@ const createCollege = async (req, res) => {
         const regHyphenConsucative = /[-]{2,}/g
         const regSpaceConsucative = /[ ]{2,}/g
         let valid = true;
+
 
         //checking if comma count more then 1
         if((fullName.match(regComma)|| []).length > 1 || (fullName.match(regHyphen)|| []).length > 1 || fullName.trim().length < 5){
@@ -52,9 +57,9 @@ const createCollege = async (req, res) => {
             return res.status(400).send({ status: false, message: "logoLink is a required field" })
         }
 
-        let regUrl = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i
+        let regUrl = /^https?:\/\/(.+\/)+.+(\.(gif|png|jpg|jpeg|webp|svg|psd|bmp|tif|jfif))$/i
 
-        if (!logoLink.match(regUrl)) {
+        if (typeof logoLink != "string" || !logoLink.match(regUrl)) {
             return res.status(400).send({ status: false, message: "Logo Link url is not valid" })
         }
 
@@ -70,6 +75,7 @@ const createCollege = async (req, res) => {
     }
 }
 const collegeDetails = async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin','*')
     try {
         let collegeName = req.query.collegeName
         if (!collegeName || collegeName.trim().length == 0) {

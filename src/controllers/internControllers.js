@@ -5,20 +5,21 @@ const validator = require ("email-validator")
 
 
 const createIntern = async (req,res)=>{
+    res.setHeader('Access-Control-Allow-Origin','*')
     try{
         const data = req.body
         
         if(Object.keys(data).length == 0){
             return res.status(400).send({status : false, message : "Plese enter the mandatory details"})
         } 
-
-        const { name, mobile, email, collegeName} = data // destructuring the required fields from data
+    
+        let { name, mobile, email, collegeName} = data // destructuring the required fields from data
 
         if(!name){
             return res.status(400).send({status : false, message : "name is a required field"})
         }
         let namePattern = /^[a-z]((?![? .,'-]$)[ .]?[a-z]){3,24}$/gi // creating a pattern for valid name with regex        
-        if(!name.match(namePattern)){ //in case the name from the data does not match our pattern
+        if(typeof name != "string" || !name.match(namePattern)){ //in case the name from the data does not match our pattern
             return res.status(400).send({status : false, message : "This is not a valid Name"})
         } 
 
@@ -33,6 +34,9 @@ const createIntern = async (req,res)=>{
         if(!mobile){ 
             return res.status(400).send({status : false, message : "Mobile is a required field and can not be empty"})
         }
+        if(typeof mobile == "number"){ 
+            mobile = mobile.toString()
+        }
         const mobiles = mobile.replace(/\s+/g, '') // removing space from in between in case we recieved (+91 9876543212)
         const mobilePattern = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/g // declaring valid phone number pattern   
         if(!mobiles.match(mobilePattern)){ 
@@ -42,8 +46,8 @@ const createIntern = async (req,res)=>{
         if(!collegeName){
             return res.status(400).send({status : false, message : "college name is a required field"})
         }  
-        if (!collegeName.match(/^[a-z]+$/i)) {
-            return res.status(400).send({ status: false, message: "name must be in an abbreviated format" })
+        if (typeof collegeName != "string" || !collegeName.match(/^[a-z]+$/i)) {
+            return res.status(400).send({ status: false, message: "name must be in an abbreviated string format" })
         }   
         const findcollege = await collegeModel.findOne({name : collegeName}) // checking for the college if any with that name exists
         if(!findcollege){
